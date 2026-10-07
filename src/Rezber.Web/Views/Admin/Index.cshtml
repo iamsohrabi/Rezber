@@ -1,0 +1,67 @@
+@model Rezber.Services.Views.Admin.AdminDashboardDto
+@{
+    ViewData["Title"] = "Admin panel";
+}
+
+<div class="container-xxl pt-4 pb-5">
+    <div class="mb-4">
+        <div class="dashboard-title">
+            <i class="fas fa-crown" style="color:var(--c-warning);margin-left:6px;"></i>
+            Admin panel
+        </div>
+        <div class="dashboard-subtitle">Manage packages, users, and Nexus storage</div>
+    </div>
+
+    <partial name="~/Views/Admin/_AdminTabs.cshtml" model='@("Index")' />
+
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-lg-3">
+            <div class="kpi-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="kpi-label">Total packages</span>
+                    <div class="kpi-icon blue"><i class="fas fa-box"></i></div>
+                </div>
+                <div class="kpi-value">@Model.TotalPackages</div>
+                <div class="kpi-trend up"><i class="fas fa-arrow-up"></i> Active</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <div class="kpi-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="kpi-label">Active users</span>
+                    <div class="kpi-icon green"><i class="fas fa-users"></i></div>
+                </div>
+                <div class="kpi-value">@Model.TotalUsers</div>
+                <div class="kpi-trend neutral">Team</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <div class="kpi-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="kpi-label">Storage used</span>
+                    <div class="kpi-icon orange"><i class="fas fa-hdd"></i></div>
+                </div>
+                <div class="kpi-value">@(Model.Storage.Id == Guid.Empty ? "Unavailable" : Model.Storage.UsedFormatted)</div>
+                <div class="kpi-trend neutral">@(Model.Storage.Id == Guid.Empty ? "No storage snapshot" : $"{Model.Storage.UsagePercent:0}% used")</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <div class="kpi-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="kpi-label">Total downloads</span>
+                    <div class="kpi-icon red"><i class="fas fa-download"></i></div>
+                </div>
+                <div class="kpi-value">@Model.TotalDownloads.ToString("N0")</div>
+                <div class="kpi-trend neutral">Total</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="dash-section">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <div class="dash-section-title"><i class="fas fa-plug"></i> Nexus repositories</div>
+            <a asp-controller="AdminNexus" asp-action="Index" class="action-btn"><i class="fas fa-arrow-right"></i> Open Nexus manager</a>
+        </div>
+        <div class="dash-section-desc">Live status and repository management are available in Nexus manager.</div>
+    </div>
+</div>

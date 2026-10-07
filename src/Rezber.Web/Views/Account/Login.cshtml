@@ -1,0 +1,55 @@
+@model LoginViewModel
+@{
+    ViewData["Title"] = "Sign in";
+    Layout = "_LayoutEmpty";
+}
+
+<div class="auth-page">
+    <div class="auth-card">
+        <div class="auth-header">
+            <img class="logo-mark" src="~/grapes.svg" alt="Rezber">
+            <div class="auth-title">Sign in to Rezber</div>
+            <div class="auth-subtitle">Enterprise package marketplace</div>
+        </div>
+
+        <form asp-action="Login" method="post" novalidate>
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
+
+            <div asp-validation-summary="ModelOnly" class="alert-validation"></div>
+
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label"></label>
+                <input asp-for="Email" class="form-control" dir="ltr" autofocus autocomplete="username" />
+                <span asp-validation-for="Email" class="text-danger" style="font-size:12px;"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Password" class="form-label"></label>
+                <input asp-for="Password" class="form-control" dir="ltr" autocomplete="current-password" />
+                <span asp-validation-for="Password" class="text-danger" style="font-size:12px;"></span>
+            </div>
+
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <label class="toggle-wrap" style="padding:0;">
+                    <input asp-for="RememberMe" type="checkbox">
+                    <span class="toggle-track"></span>
+                    <span>Remember me</span>
+                </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="fas fa-sign-in-alt"></i> Sign in
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            Don't have an account?
+            <a asp-action="Register">Sign up</a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

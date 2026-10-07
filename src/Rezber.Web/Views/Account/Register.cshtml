@@ -1,0 +1,64 @@
+@model RegisterViewModel
+@{
+    ViewData["Title"] = "Sign up";
+    Layout = "_LayoutEmpty";
+}
+
+<div class="auth-page">
+    <div class="auth-card">
+        <div class="auth-header">
+            <img class="logo-mark" src="~/grapes.svg" alt="Rezber">
+            <div class="auth-title">Sign up for Rezber</div>
+            <div class="auth-subtitle">Create your enterprise account</div>
+        </div>
+
+        <form asp-action="Register" method="post" novalidate>
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="ModelOnly" class="alert-validation"></div>
+
+            <div class="mb-3">
+                <label asp-for="DisplayName" class="form-label"></label>
+                <input asp-for="DisplayName" class="form-control" />
+                <span asp-validation-for="DisplayName" class="text-danger" style="font-size:12px;"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label"></label>
+                <input asp-for="Email" class="form-control" dir="ltr" autocomplete="email" />
+                <span asp-validation-for="Email" class="text-danger" style="font-size:12px;"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="JobTitle" class="form-label"></label>
+                <input asp-for="JobTitle" class="form-control" dir="ltr" />
+                <span asp-validation-for="JobTitle" class="text-danger" style="font-size:12px;"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Password" class="form-label"></label>
+                <input asp-for="Password" class="form-control" dir="ltr" autocomplete="new-password" />
+                <span asp-validation-for="Password" class="text-danger" style="font-size:12px;"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="ConfirmPassword" class="form-label"></label>
+                <input asp-for="ConfirmPassword" class="form-control" dir="ltr" autocomplete="new-password" />
+                <span asp-validation-for="ConfirmPassword" class="text-danger" style="font-size:12px;"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="fas fa-user-plus"></i> Sign up
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            Already have an account?
+            <a asp-action="Login">Sign in</a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

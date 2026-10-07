@@ -1,0 +1,46 @@
+﻿<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        try {
+            const theme = localStorage.getItem('rezber-theme') ?? localStorage.getItem('nexora-theme');
+            if (theme === 'light' || theme === 'dark') {
+                document.documentElement.dataset.theme = theme;
+                document.documentElement.dataset.bsTheme = theme;
+            }
+        } catch { }
+    </script>
+    <title>@ViewData["Title"] - Rezber</title>
+    <link rel="icon" type="image/svg+xml" href="~/grapes.svg">
+
+    <link href="~/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="~/lib/vazirmatn/400.css" rel="stylesheet">
+    <link href="~/lib/vazirmatn/500.css" rel="stylesheet">
+    <link href="~/lib/vazirmatn/600.css" rel="stylesheet">
+    <link href="~/lib/vazirmatn/700.css" rel="stylesheet">
+    <link href="~/lib/vazirmatn/800.css" rel="stylesheet">
+    <link href="~/lib/jetbrains-mono/400.css" rel="stylesheet">
+    <link href="~/lib/jetbrains-mono/500.css" rel="stylesheet">
+    <link href="~/lib/jetbrains-mono/600.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/lib/font-awesome/css/all.min.css">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true">
+</head>
+<body>
+
+    @await Html.PartialAsync("_Navbar")
+
+    <main>
+        @RenderBody()
+    </main>
+
+    @await Html.PartialAsync("_Toast")
+
+    <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/jquery/jquery.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

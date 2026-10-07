@@ -1,0 +1,47 @@
+@{
+    ViewData["Title"] = "Cleanup";
+}
+
+<div class="container-xxl pt-4 pb-5">
+    <div class="mb-4">
+        <div class="dashboard-title">
+            <i class="fas fa-crown" style="color:var(--c-warning);margin-left:6px;"></i>
+            Admin panel
+        </div>
+    </div>
+
+    <partial name="~/Views/Admin/_AdminTabs.cshtml" model='@("Cleanup")' />
+
+    <div class="dash-section">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <div>
+                <div class="dash-section-title"><i class="fas fa-broom"></i> Audit log retention</div>
+                <div class="dash-section-desc">Remove old audit records from the database.</div>
+            </div>
+        </div>
+
+        <form asp-action="RunCleanup" method="post">
+            @Html.AntiForgeryToken()
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div style="background:var(--c-dark-2);border:1px solid var(--c-border);border-radius:8px;padding:16px;height:100%;">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span style="font-size:13px;font-weight:600;">Delete audit logs</span>
+                            <input type="hidden" name="logs" value="true">
+                        </div>
+                        <div style="font-size:12px;color:var(--c-gray-3);margin-bottom:10px;">
+                            Remove audit entries older than the selected number of days.
+                        </div>
+                        <input type="number" name="logDays" class="form-control" value="30" min="1" max="3650" required>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="action-btn primary mt-3">
+                <i class="fas fa-play"></i> Run cleanup
+            </button>
+        </form>
+    </div>
+
+</div>

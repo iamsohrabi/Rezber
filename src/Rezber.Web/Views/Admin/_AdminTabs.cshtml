@@ -1,0 +1,25 @@
+@model string
+@{
+    var tabs = new[]
+    {
+        new { Key = "Index", Label = "Overview", Icon = "fa-th-large", Href = "/admin" },
+        new { Key = "Storage", Label = "Nexus storage", Icon = "fa-hdd", Href = "/admin/storage" },
+        new { Key = "Nexus", Label = "Nexus manager", Icon = "fa-plug", Href = "/admin/nexus" },
+        new { Key = "Packages", Label = "Packages", Icon = "fa-box", Href = "/admin/packages" },
+        new { Key = "Users", Label = "Users", Icon = "fa-users", Href = "/admin/users" },
+        new { Key = "Cleanup", Label = "Cleanup", Icon = "fa-broom", Href = "/admin/cleanup" },
+        new { Key = "Audit", Label = "Audit logs", Icon = "fa-history", Href = "/admin/audit" },
+        new { Key = "Settings", Label = "Nexus settings", Icon = "fa-cog", Href = "/admin/settings" }
+    };
+}
+
+<ul class="nav nav-tabs tabs-scroll mb-4">
+    @foreach (var t in tabs)
+    {
+        <li class="nav-item">
+            <a class="nav-link @(Model == t.Key ? "active" : "")" href="@t.Href">
+                <i class="fas @t.Icon"></i> @t.Label
+            </a>
+        </li>
+    }
+</ul>

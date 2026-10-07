@@ -1,0 +1,150 @@
+@model PackageDetailDto
+@{
+    var package = Model.Package;
+    ViewData["Title"] = package.Name;
+}
+
+<div class="container-xxl pb-5">
+    <nav class="breadcrumb-custom" aria-label="Breadcrumb">
+        <a asp-controller="PackageBrowser" asp-action="Index">Packages</a>
+        <i class="fas fa-chevron-left" aria-hidden="true"></i>
+        <span>@package.Name</span>
+    </nav>
+
+    <section class="detail-hero mt-3">
+        <div class="d-flex flex-column flex-md-row align-items-start gap-4">
+            <div class="detail-icon-large @LanguageClass(package.Lang)">
+                @if (package.ImageWebp is { Length: > 0 })
+                {
+                    <img src="@Url.Action("Image", "PackageBrowser", new { id = package.Id })" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:inherit">
+                }
+                else
+                {
+                    @LanguageLabel(package.Lang)
+                }
+            </div>
+            <div class="flex-grow-1">
+                <div class="detail-hero-name">@package.Name</div>
+                <p class="detail-hero-desc">@package.Description</p>
+                <div class="detail-hero-meta">
+                    <span><i class="fas fa-user"></i> <strong>@package.Author</strong></span>
+                    <span><i class="fas fa-code"></i> <strong>@package.LanguageFullName</strong></span>
+                    <span><i class="fas fa-code-branch"></i> v<strong>@package.Version</strong></span>
+                    <span><i class="fas fa-download"></i> <strong>@Model.TotalDownloads.ToString("N0")</strong> downloads</span>
+                    <span><i class="fas fa-scale-balanced"></i> <strong>@package.License</strong></span>
+                    <span><i class="fas fa-box"></i> <strong>@package.Size</strong></span>
+                </div>
+                @if (Model.CanEdit)
+                {
+                    <div class="package-owner-actions">
+                        <a class="btn btn-secondary" asp-action="Edit" asp-route-id="@package.Id">
+                            <i class="fas fa-pen"></i> Edit package
+                        </a>
+                        <form asp-action="Delete" asp-route-id="@package.Id" method="post"
+                              onsubmit="return confirm('Remove this package?');">
+                            @Html.AntiForgeryToken()
+                            <button class="btn btn-danger" type="submit"><i class="fas fa-trash"></i> Delete</button>
+                        </form>
+                    </div>
+                }
+                <div class="install-box">
+                    <code>@package.InstallCommand</code>
+                    <button type="button" class="copy-btn" data-copy="@package.InstallCommand">
+                        <i class="fas fa-copy"></i> Copy
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    @if (package.Tags.Count > 0)
+    {
+        <div class="pkg-tag-list mt-3">
+            @foreach (var tag in package.Tags)
+            {
+                <span class="tag">@tag</span>
+            }
+        </div>
+    }
+
+    <div class="row g-4 mt-1">
+        <div class="col-lg-8">
+            @if (!string.IsNullOrWhiteSpace(Model.ReadmeHtml))
+            {
+                <section class="mb-4">
+                    <h2 class="dash-section-title mb-3">README</h2>
+                    <div class="readme-content" dir="auto">@Html.Raw(Model.ReadmeHtml)</div>
+                </section>
+            }
+            @if (package.Dependencies.Count > 0)
+            {
+                <section class="dash-section">
+                    <h2 class="dash-section-title mb-3">Dependencies</h2>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead><tr><th>Name</th><th>Version</th><th>Type</th></tr></thead>
+                            <tbody>
+                                @foreach (var dependency in package.Dependencies)
+                                {
+                                    <tr>
+                                        <td class="cell-mono">@dependency.Name</td>
+                                        <td class="cell-mono">@dependency.Version</td>
+                                        <td>@dependency.Type</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            }
+        </div>
+        <aside class="col-lg-4">
+            <section class="dash-section">
+                <h2 class="dash-section-title mb-3">Versions</h2>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead><tr><th>Version</th><th>Downloads</th></tr></thead>
+                        <tbody>
+                            @foreach (var release in Model.AvailableVersions)
+                            {
+                                <tr>
+                                    <td>
+                                        <span class="cell-mono">v@release.Version</span>
+                                        @if (release.Latest)
+                                        {
+                                            <span class="badge bg-success ms-1">Latest</span>
+                                        }
+                                    </td>
+                                    <td class="cell-mono">@release.Downloads.ToString("N0")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </aside>
+    </div>
+</div>
+
+@functions {
+    private static string LanguageClass(string? language) =>
+        language?.ToLowerInvariant() switch
+        {
+            "csharp" or "c#" or ".net" or "dotnet" => "csharp",
+            "javascript" or "js" or "typescript" or "ts" => "js",
+            "python" or "py" => "python",
+            "go" or "golang" => "go",
+            _ => string.Empty
+        };
+
+    private static string LanguageLabel(string? language) =>
+        language?.ToLowerInvariant() switch
+        {
+            "csharp" or "c#" or ".net" or "dotnet" => "C#",
+            "javascript" or "js" => "JS",
+            "typescript" or "ts" => "TS",
+            "python" or "py" => "PY",
+            "go" or "golang" => "GO",
+            _ => string.IsNullOrWhiteSpace(language) ? "PKG" : language[..Math.Min(3, language.Length)].ToUpperInvariant()
+        };
+}

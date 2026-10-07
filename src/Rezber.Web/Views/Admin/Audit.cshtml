@@ -1,0 +1,54 @@
+@model List<AuditLog>
+@{
+    ViewData["Title"] = "System audit logs";
+}
+
+<div class="container-xxl pt-4 pb-5">
+    <div class="mb-4">
+        <div class="dashboard-title">
+            <i class="fas fa-crown" style="color:var(--c-warning);margin-left:6px;"></i>
+            Admin panel
+        </div>
+    </div>
+
+    <partial name="~/Views/Admin/_AdminTabs.cshtml" model='@("Audit")' />
+
+    <div class="dash-section">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <div>
+                <div class="dash-section-title"><i class="fas fa-history"></i> System audit logs</div>
+                <div class="dash-section-desc">History of user actions and system events</div>
+            </div>
+            <form asp-action="DeleteOldLogs" method="post" onsubmit="return confirm('Delete logs older than 30 days?')">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="action-btn danger">
+                    <i class="fas fa-trash"></i> Delete old logs
+                </button>
+            </form>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Time</th><th>User</th><th>Action</th><th>Target</th><th>IP</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var log in Model)
+                    {
+                        <tr>
+                            <td class="cell-mono" style="font-size:11.5px;">@log.Time.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td>@log.UserName</td>
+                            <td>
+                                <span class="badge-custom @log.ActionColor">@log.ActionLabel</span>
+                            </td>
+                            <td class="cell-mono" style="font-size:11.5px;">@log.Target</td>
+                            <td class="cell-mono" style="font-size:11.5px;">@log.Ip</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

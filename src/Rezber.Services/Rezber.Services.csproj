@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Rezber.Core\Rezber.Core.csproj" />
+    <ProjectReference Include="..\Rezber.Domain\Rezber.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Markdig" />
+    <PackageReference Include="HtmlSanitizer" />
+  </ItemGroup>
+
+</Project>

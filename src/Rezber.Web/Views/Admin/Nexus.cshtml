@@ -1,0 +1,224 @@
+@model Rezber.Services.Views.Admin.NexusAdminDto
+@{
+    ViewData["Title"] = "Nexus manager";
+}
+
+<div class="container-xxl pt-4 pb-5">
+    <div class="mb-4">
+        <div class="dashboard-title"><i class="fas fa-crown" style="color:var(--c-warning);margin-left:6px;"></i> Admin panel</div>
+    </div>
+
+    <partial name="~/Views/Admin/_AdminTabs.cshtml" model='@("Nexus")' />
+
+    @if (TempData["Error"] is string error)
+    {
+        <div class="alert alert-danger">@error</div>
+    }
+    @if (TempData["Success"] is string success)
+    {
+        <div class="alert alert-success">@success</div>
+    }
+    @if (!string.IsNullOrWhiteSpace(Model.Error))
+    {
+        <div class="alert alert-danger">Nexus request failed: @Model.Error</div>
+    }
+
+    @if (Model.Status != null)
+    {
+        <div class="row g-3 mb-4">
+            <div class="col-sm-6 col-lg-4">
+                <div class="kpi-card">
+                    <div class="kpi-label">Nexus version</div>
+                    <div class="kpi-value">@Model.Status.Version</div>
+                    <div class="kpi-trend neutral">@Model.Status.Edition</div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+                <div class="kpi-card">
+                    <div class="kpi-label">Service state</div>
+                    <div class="kpi-value">@Model.Status.State</div>
+                    <div class="kpi-trend @(Model.Status.State.Equals("STARTED", StringComparison.OrdinalIgnoreCase) ? "up" : "down")">Nexus status endpoint</div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+                <div class="kpi-card">
+                    <div class="kpi-label">Upload access</div>
+                    <div class="kpi-value">@(Model.Writable == true ? "Writable" : "Read only")</div>
+                    <div class="kpi-trend neutral">Status writable endpoint</div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <section class="dash-section">
+        <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap mb-3">
+            <div class="dash-section-title"><i class="fas fa-boxes-stacked"></i> Live repositories</div>
+            <form asp-action="SyncCatalog" method="post">
+                @Html.AntiForgeryToken()
+                <button class="action-btn" type="submit"><i class="fas fa-rotate"></i> Sync searchable catalog</button>
+            </form>
+        </div>
+        @if (Model.Repositories.Count == 0)
+        {
+            <div class="empty-state"><p>No live repository data is available.</p></div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table">
+                    <thead><tr><th>Name</th><th>Format</th><th>Type</th><th>State</th><th>Health check</th></tr></thead>
+                    <tbody>
+                        @foreach (var repository in Model.Repositories)
+                        {
+                            <tr>
+                                <td class="cell-mono">
+                                    <a asp-action="Index" asp-route-repositoryName="@repository.Name">@repository.Name</a>
+                                </td>
+                                <td>@repository.Format</td>
+                                <td>@repository.Type</td>
+                                <td><span class="badge-custom @(repository.Online ? "success" : "danger")">@(repository.Online ? "Online" : "Offline")</span></td>
+                                <td class="repository-actions">
+                                    <form asp-action="RunHealthCheck" asp-route-repositoryName="@repository.Name" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <button class="tbl-icon-btn" type="submit" title="Run health check" aria-label="Run health check for @repository.Name">
+                                            <i class="fas fa-stethoscope"></i>
+                                        </button>
+                                    </form>
+                                    <form asp-action="StopHealthCheck" asp-route-repositoryName="@repository.Name" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <button class="tbl-icon-btn danger" type="submit" title="Stop health check" aria-label="Stop health check for @repository.Name">
+                                            <i class="fas fa-stop"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+
+    <section class="dash-section">
+        <div class="dash-section-title mb-3"><i class="fas fa-magnifying-glass"></i> Search Nexus assets</div>
+        <form asp-action="Index" method="get" class="row g-2 mb-4">
+            <div class="col-md-3">
+                <select name="searchType" class="form-select">
+                    <option value="assets" selected="@(Model.SearchType != "components" ? "selected" : null)">Assets</option>
+                    <option value="components" selected="@(Model.SearchType == "components" ? "selected" : null)">Components</option>
+                </select>
+            </div>
+            <div class="col-md-3"><input name="q" value="@Model.Query" class="form-control" placeholder="Search query" /></div>
+            <div class="col-md-2"><input name="repository" value="@Model.RepositoryFilter" class="form-control" placeholder="Repository" /></div>
+            <div class="col-md-2"><input name="format" value="@Model.FormatFilter" class="form-control" placeholder="Format" /></div>
+            <div class="col-md-2"><button class="btn btn-primary w-100" type="submit"><i class="fas fa-search me-1"></i> Search</button></div>
+            <div class="col-md-4"><input name="name" value="@Model.NameFilter" class="form-control" placeholder="Component name" /></div>
+            <div class="col-md-4"><input name="version" value="@Model.VersionFilter" class="form-control" placeholder="Version" /></div>
+            <div class="col-md-4"><input name="group" value="@Model.GroupFilter" class="form-control" placeholder="Group" /></div>
+        </form>
+
+        @if (Model.SearchResult != null)
+        {
+            @if (Model.SearchResult.Items.Count == 0)
+            {
+                <p class="text-muted">No matching assets found.</p>
+            }
+            @foreach (var item in Model.SearchResult.Items)
+            {
+                <div class="nexus-search-item">
+                    <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap mb-2">
+                        <div>
+                            <strong>@item.Name</strong> <span class="cell-mono">@item.Version</span>
+                            <div class="text-muted small">@item.Repository · @item.Format</div>
+                        </div>
+                    </div>
+                    @foreach (var asset in item.Assets)
+                    {
+                        <div class="nexus-asset-row">
+                            <a href="@asset.DownloadUrl" target="_blank" rel="noopener noreferrer">@asset.Path</a>
+                            <span class="cell-mono">@(asset.FileSize.HasValue ? StorageSnapshot.FormatBytes(asset.FileSize.Value) : "—")</span>
+                            <form asp-action="DeleteAssetFromUi" method="post" onsubmit="return confirm('Delete this Nexus asset? This cannot be undone.');">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@asset.Id" />
+                                <input type="hidden" name="q" value="@Model.Query" />
+                                <button class="tbl-icon-btn danger" type="submit" title="Delete asset" aria-label="Delete @asset.Path">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    }
+                </div>
+            }
+        }
+    </section>
+
+    @if (Model.Repository != null)
+    {
+        <section class="dash-section">
+            <div class="dash-section-title mb-3"><i class="fas fa-boxes-stacked"></i> Repository details</div>
+            <div class="row g-3">
+                <div class="col-md-3"><span class="text-muted">Name</span><div class="cell-mono">@Model.Repository.Name</div></div>
+                <div class="col-md-3"><span class="text-muted">Format</span><div>@Model.Repository.Format</div></div>
+                <div class="col-md-3"><span class="text-muted">Type</span><div>@Model.Repository.Type</div></div>
+                <div class="col-md-3"><span class="text-muted">Online</span><div>@Model.Repository.Online</div></div>
+                <div class="col-12"><a href="@Model.Repository.Url" target="_blank" rel="noopener noreferrer">Open repository URL</a></div>
+            </div>
+        </section>
+    }
+
+    @if (Model.Component != null || Model.Asset != null)
+    {
+        <section class="dash-section">
+            <div class="dash-section-title mb-3"><i class="fas fa-circle-info"></i> Item details</div>
+            @if (Model.Component != null)
+            {
+                <dl class="nexus-detail-list">
+                    <dt>Component ID</dt><dd class="cell-mono">@Model.Component.Id</dd>
+                    <dt>Repository</dt><dd>@Model.Component.Repository</dd>
+                    <dt>Format</dt><dd>@Model.Component.Format</dd>
+                    <dt>Name</dt><dd>@Model.Component.Name</dd>
+                    <dt>Version</dt><dd>@Model.Component.Version</dd>
+                </dl>
+            }
+            @if (Model.Asset != null)
+            {
+                <dl class="nexus-detail-list">
+                    <dt>Asset ID</dt><dd class="cell-mono">@Model.Asset.Id</dd>
+                    <dt>Repository</dt><dd>@Model.Asset.Repository</dd>
+                    <dt>Path</dt><dd class="cell-mono">@Model.Asset.Path</dd>
+                    <dt>Content type</dt><dd>@Model.Asset.ContentType</dd>
+                    <dt>Size</dt><dd>@(Model.Asset.FileSize.HasValue ? StorageSnapshot.FormatBytes(Model.Asset.FileSize.Value) : "—")</dd>
+                    <dt>Last modified</dt><dd>@Model.Asset.LastModified?.ToLocalTime().ToString("g")</dd>
+                    <dt>Last downloaded</dt><dd>@Model.Asset.LastDownloaded?.ToLocalTime().ToString("g")</dd>
+                </dl>
+            }
+        </section>
+    }
+
+    <section class="dash-section">
+        <div class="dash-section-title mb-3"><i class="fas fa-magnifying-glass"></i> Inspect by Nexus ID</div>
+        <div class="row g-3">
+            <div class="col-lg-6">
+                <form asp-action="Index" method="get" class="d-flex gap-2">
+                    <input name="componentId" class="form-control" placeholder="Component ID" required />
+                    <button type="submit" class="action-btn">Get component</button>
+                </form>
+            </div>
+            <div class="col-lg-6">
+                <form asp-action="Index" method="get" class="d-flex gap-2">
+                    <input name="assetId" class="form-control" placeholder="Asset ID" required />
+                    <button type="submit" class="action-btn">Get asset</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <section class="dash-section danger-zone">
+        <div class="dash-section-title mb-3"><i class="fas fa-triangle-exclamation"></i> Delete component by Nexus ID</div>
+        <form asp-action="DeleteComponentFromUi" method="post" class="row g-2" onsubmit="return confirm('Delete this Nexus component and its assets? This cannot be undone.');">
+            @Html.AntiForgeryToken()
+            <div class="col-md-9"><input name="id" class="form-control" required placeholder="Nexus component ID" /></div>
+            <div class="col-md-3"><button class="action-btn danger w-100 justify-content-center" type="submit"><i class="fas fa-trash"></i> Delete component</button></div>
+        </form>
+    </section>
+</div>

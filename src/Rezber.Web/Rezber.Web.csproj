@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <Version>1.1.0</Version>
+        <PackageId>Rezber.Web</PackageId>
+        <Authors>Mehrdad Sohrabi</Authors>
+        <Description>Rezber's ASP.NET Core web application for browsing, publishing, and managing software packages backed by MongoDB and Nexus Repository.</Description>
+    </PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Rezber.Services\Rezber.Services.csproj" />
+		<ProjectReference Include="..\Rezber.Core\Rezber.Core.csproj" />
+		<ProjectReference Include="..\Rezber.Domain\Rezber.Domain.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="AspNetCore.Identity.MongoDbCore" />
+		<PackageReference Include="Markdig" />
+		<PackageReference Include="SkiaSharp" />
+	</ItemGroup>
+</Project>

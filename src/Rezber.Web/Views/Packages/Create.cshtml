@@ -1,0 +1,87 @@
+@model PackageFormDto
+@{
+    ViewData["Title"] = "New package";
+}
+
+<div class="container-xxl pt-4 pb-5">
+    <div class="mb-4">
+        <a class="breadcrumb-custom" asp-action="Index"><i class="fas fa-chevron-right"></i> Package catalog</a>
+        <h1 class="dashboard-title mt-3">Publish a package</h1>
+        <p class="dashboard-subtitle">Add package metadata and upload its NuGet package file.</p>
+    </div>
+    <form asp-action="Create" method="post" enctype="multipart/form-data" class="dash-section">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+        <div class="row g-3">
+            <div class="col-md-8">
+                <label asp-for="Name" class="form-label">Package name</label>
+                <input asp-for="Name" class="form-control" autocomplete="off">
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="Version" class="form-label">Version</label>
+                <input asp-for="Version" class="form-control" placeholder="1.0.0">
+                <span asp-validation-for="Version" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="Language" class="form-label">Language</label>
+                <select asp-for="Language" class="form-select">
+                    <option value="csharp">C# / .NET</option>
+                    <option value="javascript">JavaScript</option>
+                    <option value="typescript">TypeScript</option>
+                    <option value="python">Python</option>
+                    <option value="go">Go</option>
+                </select>
+                <span asp-validation-for="Language" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="Target" class="form-label">Target framework or platform</label>
+                <input asp-for="Target" class="form-control" placeholder="e.g. net8.0">
+                <span asp-validation-for="Target" class="text-danger"></span>
+            </div>
+            <div class="col-12">
+                <label asp-for="Description" class="form-label">Description</label>
+                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="Tags" class="form-label">Tags</label>
+                <input asp-for="Tags" class="form-control" placeholder="logging, utilities">
+            </div>
+            <div class="col-md-6">
+                <label asp-for="License" class="form-label">License</label>
+                <input asp-for="License" class="form-control" placeholder="MIT">
+            </div>
+            <div class="col-md-6">
+                <label asp-for="RepositoryUrl" class="form-label">Repository URL</label>
+                <input asp-for="RepositoryUrl" class="form-control" type="url" placeholder="https://github.com/...">
+                <span asp-validation-for="RepositoryUrl" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="ReadmeUrl" class="form-label">README URL (optional)</label>
+                <input asp-for="ReadmeUrl" class="form-control" type="url">
+                <span asp-validation-for="ReadmeUrl" class="text-danger"></span>
+            </div>
+            <div class="col-12">
+                <label asp-for="Readme" class="form-label">README content (optional)</label>
+                <textarea asp-for="Readme" class="form-control" rows="8"></textarea>
+            </div>
+            <div class="col-12">
+                <label asp-for="Dependencies" class="form-label">Dependencies (one per line: name | version | type)</label>
+                <textarea asp-for="Dependencies" class="form-control" rows="3" placeholder="Example.Dependency | 1.2.3 | runtime"></textarea>
+            </div>
+            <div class="col-12">
+                <label for="packageFile" class="form-label">NuGet package file (.nupkg)</label>
+                <input id="packageFile" name="packageFile" type="file" class="form-control" accept=".nupkg" required>
+            </div>
+        </div>
+        <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-upload"></i> Publish package</button>
+            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

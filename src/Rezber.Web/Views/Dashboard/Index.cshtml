@@ -1,0 +1,272 @@
+@model Rezber.Services.Views.Dashboard.UserDashboardDto
+@{
+    ViewData["Title"] = "My dashboard";
+}
+
+<div class="container-xxl pt-4 pb-5">
+    <div class="mb-4">
+        <div class="dashboard-title">My dashboard</div>
+        <div class="dashboard-subtitle">Welcome back, @Model.User.DisplayName 👋</div>
+    </div>
+
+    <ul class="nav nav-tabs tabs-scroll mb-4" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#uOverview" type="button">
+                <i class="fas fa-th-large"></i> Overview
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#uPackages" type="button">
+                <i class="fas fa-box"></i> My packages <span class="badge-count">@Model.MyPackages.Count</span>
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#uStats" type="button">
+                <i class="fas fa-chart-bar"></i> Analytics
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#uSettings" type="button">
+                <i class="fas fa-cog"></i> Settings
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        <div class="tab-pane fade show active" id="uOverview">
+            <div class="row g-3 mb-4">
+                <div class="col-sm-6 col-lg-3">
+                    <div class="kpi-card">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="kpi-label">My packages</span>
+                            <div class="kpi-icon blue"><i class="fas fa-box"></i></div>
+                        </div>
+                        <div class="kpi-value">@Model.MyPackages.Count</div>
+                        <div class="kpi-trend neutral">Published packages</div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <div class="kpi-card">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="kpi-label">Total downloads</span>
+                            <div class="kpi-icon green"><i class="fas fa-download"></i></div>
+                        </div>
+                        <div class="kpi-value">@Model.TotalDownloads.ToString("N0")</div>
+                        <div class="kpi-trend neutral">Recorded across your packages</div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <div class="kpi-card">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="kpi-label">Storage used</span>
+                            <div class="kpi-icon purple"><i class="fas fa-hdd"></i></div>
+                        </div>
+                        <div class="kpi-value">@Model.UsedStorageMb.ToString("0.#") MB</div>
+                        <div class="kpi-trend neutral">Sum of package sizes</div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <div class="kpi-card">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="kpi-label">Latest release</span>
+                            <div class="kpi-icon orange"><i class="fas fa-clock"></i></div>
+                        </div>
+                        <div class="kpi-value latest-package-value">
+                            @(Model.LastPublished == null ? "-" : $"{Model.LastPublished.Name} v{Model.LastPublished.Version}")
+                        </div>
+                        <div class="kpi-trend neutral">
+                            @(Model.LastPublished != null
+                                ? TimeAgo(Model.LastPublished.UpdatedAt != default
+                                    ? Model.LastPublished.UpdatedAt
+                                    : Model.LastPublished.Created)
+                                : "No packages yet")
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dash-section">
+                <div class="dash-section-title mb-3"><i class="fas fa-info-circle"></i> Quick guide</div>
+                <div style="font-size:13px;color:var(--c-gray-2);line-height:1.9;">
+                    • Click the "New package" button above to publish a package<br>
+                    • Remove old package versions from the "My packages" tab<br>
+                    • Remove old and unused versions to reduce storage usage<br>
+                    • Contact an admin if you need more storage
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="uPackages">
+            <div class="dash-section">
+                <div class="dash-section-title mb-3"><i class="fas fa-box"></i> My packages</div>
+                @if (!Model.MyPackages.Any())
+                {
+                    <div class="empty-state">
+                        <i class="fas fa-box-open"></i>
+                        <p>No packages yet. Your first one will show up here 🚀</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table my-packages-table">
+                            <colgroup>
+                                <col style="width: 27%">
+                                <col style="width: 13%">
+                                <col style="width: 10%">
+                                <col style="width: 14%">
+                                <col style="width: 11%">
+                                <col style="width: 17%">
+                                <col style="width: 8%">
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th>Package</th>
+                                    <th>Version</th>
+                                    <th class="text-center">Releases</th>
+                                    <th class="text-end">Downloads</th>
+                                    <th class="text-center">Size</th>
+                                    <th>Updated</th>
+                                    <th class="text-center">View</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var pkg in Model.MyPackages)
+                                {
+                                    <tr>
+                                        <td class="package-name-cell" title="@pkg.Name">@pkg.Name</td>
+                                        <td class="cell-mono text-nowrap">v@pkg.Version</td>
+                                        <td class="cell-mono text-center">@pkg.Versions.Count</td>
+                                        <td class="cell-mono text-end text-nowrap">@pkg.Downloads.ToString("N0")</td>
+                                        <td class="cell-mono text-center text-nowrap">@pkg.Size</td>
+                                        <td class="package-updated text-nowrap">@TimeAgo(pkg.UpdatedAt != default ? pkg.UpdatedAt : pkg.Created)</td>
+                                        <td class="package-actions">
+                                            <a asp-controller="PackageBrowser" asp-action="Details" asp-route-id="@pkg.Id"
+                                               class="tbl-icon-btn" title="View package" aria-label="View @pkg.Name">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="uStats">
+            <div class="dash-section">
+                <div class="dash-section-title mb-3"><i class="fas fa-chart-line"></i> My package analytics</div>
+                <div class="row g-3">
+                    <div class="col-6 col-md-3">
+                        <div class="stat-mini">
+                            <div class="stat-mini-label">Average downloads per package</div>
+                            <div class="stat-mini-value">@Model.AverageDownloadsPerPackage.ToString("N1")</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="stat-mini">
+                            <div class="stat-mini-label">Most downloaded</div>
+                            <div class="stat-mini-value" style="font-size:13px;">
+                                @(Model.MostDownloadedPackage ?? "-")
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="stat-mini">
+                            <div class="stat-mini-label">Total versions</div>
+                            <div class="stat-mini-value">@Model.TotalVersions</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="stat-mini">
+                            <div class="stat-mini-label">Last updated</div>
+                            <div class="stat-mini-value" style="font-size:13px;">
+                                @(Model.LastPublished != null
+                                    ? TimeAgo(Model.LastPublished.UpdatedAt != default
+                                        ? Model.LastPublished.UpdatedAt
+                                        : Model.LastPublished.Created)
+                                    : "-")
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="uSettings">
+            <div class="dash-section">
+                <div class="dash-section-title mb-3"><i class="fas fa-user"></i> Account information</div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Display name</label>
+                        <input type="text" class="form-control" value="@Model.User.DisplayName" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Work email</label>
+                        <input type="text" class="form-control" value="@Model.User.Email" dir="ltr" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Job title</label>
+                        <input type="text" class="form-control" value="@Model.User.JobTitle" dir="ltr" readonly>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dash-section">
+                <div class="dash-section-title mb-1"><i class="fas fa-shield-halved"></i> Security</div>
+                <div class="dash-section-desc mb-3">Update your account password.</div>
+                <button class="action-btn" type="button" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                    <i class="fas fa-key"></i> Change password
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form asp-controller="Account" asp-action="ChangePassword" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h2 class="modal-title" id="changePasswordTitle">Change password</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body d-grid gap-3">
+                    <div>
+                        <label for="currentPassword" class="form-label">Current password</label>
+                        <input id="currentPassword" name="CurrentPassword" type="password" class="form-control" autocomplete="current-password" required />
+                    </div>
+                    <div>
+                        <label for="newPassword" class="form-label">New password</label>
+                        <input id="newPassword" name="NewPassword" type="password" class="form-control" autocomplete="new-password" minlength="8" required />
+                    </div>
+                    <div>
+                        <label for="confirmPassword" class="form-label">Confirm new password</label>
+                        <input id="confirmPassword" name="ConfirmPassword" type="password" class="form-control" autocomplete="new-password" minlength="8" required />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save password</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string TimeAgo(DateTime date)
+    {
+        if (date == default) return "Unknown";
+
+        var diff = (int)(DateTime.UtcNow - date).TotalDays;
+        if (diff <= 0) return "Today";
+        if (diff == 1) return "Yesterday";
+        if (diff < 7) return $"{diff} days ago";
+        if (diff < 30) return $"{diff / 7} weeks ago";
+        return $"{diff / 30} months ago";
+    }
+}

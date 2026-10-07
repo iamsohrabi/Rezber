@@ -1,0 +1,79 @@
+@model StorageSnapshot
+@{
+    ViewData["Title"] = "Nexus storage";
+}
+
+<div class="container-xxl pt-4 pb-5">
+    <div class="mb-4">
+        <div class="dashboard-title">
+            <i class="fas fa-crown" style="color:var(--c-warning);margin-left:6px;"></i>
+            Admin panel
+        </div>
+    </div>
+
+    <partial name="~/Views/Admin/_AdminTabs.cshtml" model='@("Storage")' />
+
+    @if (Model.Id == Guid.Empty)
+    {
+        <div class="empty-state"><i class="fas fa-database"></i><p>No storage snapshot has been recorded yet.</p></div>
+    }
+    else
+    {
+
+    <div class="dash-section">
+        <div class="dash-section-title mb-3"><i class="fas fa-server"></i> Repositories</div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Repository</th><th>Type</th><th>Size</th><th>Files</th><th>Last cleanup</th><th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var repo in Model.Repositories)
+                    {
+                        <tr>
+                            <td class="cell-mono">@repo.Name</td>
+                            <td>@repo.Type</td>
+                            <td class="cell-mono">@StorageSnapshot.FormatBytes(repo.SizeBytes)</td>
+                            <td class="cell-mono">@repo.FileCount</td>
+                            <td>@repo.LastCleanup.ToString("yyyy-MM-dd")</td>
+                            <td>
+                                <span class="badge-custom @repo.StatusColor">
+                                    <span class="dot-status"></span> @repo.StatusLabel
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="dash-section">
+        <div class="dash-section-title mb-1"><i class="fas fa-database"></i> Blob Stores</div>
+        <div class="dash-section-desc mb-3">Physical location used to store data</div>
+
+        <div class="row g-3">
+            @foreach (var bs in Model.BlobStores)
+            {
+                <div class="col-md-4">
+                    <div class="storage-item">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="storage-item-name"><i class="fas fa-server"></i> @bs.Name</span>
+                            <span class="storage-item-value">@StorageSnapshot.FormatBytes(bs.SizeBytes)</span>
+                        </div>
+                        <div class="storage-item-bar">
+                            <div class="storage-item-fill" style="width:@bs.UsagePercent%;background:var(--c-@bs.Color);"></div>
+                        </div>
+                        <div style="font-size:11px;color:var(--c-gray-3);margin-top:6px;direction:ltr;text-align:left;">
+                            @bs.Path
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    }
+</div>

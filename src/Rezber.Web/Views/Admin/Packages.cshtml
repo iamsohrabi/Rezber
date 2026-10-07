@@ -1,0 +1,85 @@
+@model List<Rezber.Domain.Models.Package>
+@{
+    ViewData["Title"] = "Package management";
+}
+
+<div class="container-xxl pt-4 pb-5">
+    <div class="mb-4">
+        <div class="dashboard-title">
+            <i class="fas fa-crown" style="color:var(--c-warning);margin-left:6px;"></i>
+            Admin panel
+        </div>
+    </div>
+
+    <partial name="~/Views/Admin/_AdminTabs.cshtml" model='@("Packages")' />
+
+    <div class="dash-section">
+        <div class="dash-section-title mb-3"><i class="fas fa-box"></i> Package management</div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th><th>Version</th><th>Author</th><th>Size</th><th>Downloads</th><th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var pkg in Model)
+                    {
+                        <tr>
+                            <td class="cell-mono">@pkg.Name</td>
+                            <td class="cell-mono">v@pkg.Version</td>
+                            <td>@pkg.AuthorName</td>
+                            <td class="cell-mono">@pkg.Size</td>
+                            <td class="cell-mono">@pkg.Downloads.ToString("N0")</td>
+                            <td class="d-flex gap-1">
+                                          <a asp-controller="PackageBrowser" asp-action="Details" asp-route-id="@pkg.Id"
+                                              class="tbl-icon-btn" title="Details">
+                                                <i class="fas fa-eye"></i>
+                                </a>
+                                <button type="button" class="tbl-icon-btn danger" title="Delete"
+                                        data-bs-toggle="modal" data-bs-target="#deletePkgModal"
+                                        data-pkg-id="@pkg.Id" data-pkg-name="@pkg.Name">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deletePkgModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:420px;">
+        <div class="modal-content">
+            <form asp-action="DeletePackage" method="post" id="deletePkgForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" id="deletePkgId" />
+                <div class="modal-body text-center py-4">
+                    <div class="confirm-icon-lg"><i class="fas fa-exclamation-triangle"></i></div>
+                    <h5 class="modal-title mb-2">Delete package</h5>
+                    <p style="color:var(--c-gray-2);font-size:13.5px;">
+                        Are you sure? This action cannot be undone.
+                        <br>
+                        <span class="target-name" id="deletePkgName">-</span>
+                    </p>
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="button" class="btn btn-secondary flex-fill" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger flex-fill">Delete</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('deletePkgModal')?.addEventListener('show.bs.modal', function (event) {
+            const btn = event.relatedTarget;
+            document.getElementById('deletePkgId').value = btn.getAttribute('data-pkg-id');
+            document.getElementById('deletePkgName').textContent = btn.getAttribute('data-pkg-name');
+        });
+    </script>
+}

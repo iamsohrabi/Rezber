@@ -1,0 +1,19 @@
+@{
+    ViewData["Title"] = "Access denied";
+    Layout = "_LayoutEmpty";
+}
+
+<div class="auth-page">
+    <div class="auth-card text-center">
+        <div class="confirm-icon-lg" style="margin:0 auto 20px;">
+            <i class="fas fa-lock"></i>
+        </div>
+        <h3 style="font-size:20px;font-weight:700;margin-bottom:8px;">Access denied</h3>
+        <p style="color:var(--c-gray-2);font-size:13.5px;margin-bottom:24px;">
+            You do not have permission to access this section.
+        </p>
+        <a asp-controller="PackageBrowser" asp-action="Index" class="btn btn-primary w-100">
+            <i class="fas fa-home"></i> Back to home
+        </a>
+    </div>
+</div>

@@ -1,0 +1,95 @@
+@using Rezber.Web.Extensions
+@{
+    var currentUser = Context.GetCurrentUser();
+    var isAdmin = currentUser.IsAdmin;
+    var isAuthenticated = User.Identity?.IsAuthenticated ?? false;
+}
+
+<nav class="navbar-custom">
+    <div class="container-xxl d-flex align-items-center flex-wrap gap-2">
+
+        <a class="logo-wrap" asp-controller="PackageBrowser" asp-action="Index">
+            <img class="logo-mark" src="~/grapes.svg" alt="Rezber">
+            <div class="logo-name">Rezber</div>
+        </a>
+
+        <div class="search-wrap">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" class="search-input" placeholder="Search packages..."
+                   id="globalSearchInput" value="@ViewData["SearchQuery"]" />
+        </div>
+
+        <div class="ms-auto d-flex align-items-center gap-2">
+            <partial name="_ThemeToggle" />
+
+            @if (isAuthenticated)
+            {
+                <a asp-controller="PackageBrowser" asp-action="Create" class="btn btn-primary navbar-create-btn">
+                    <i class="fas fa-plus"></i>
+                    <span class="d-none d-sm-inline">New package</span>
+                </a>
+
+                <div class="dropdown">
+                    <button class="user-avatar-btn" data-bs-toggle="dropdown" aria-expanded="false">
+                        @currentUser.Initials
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li class="dropdown-user-info">
+                            <div class="name">@currentUser.DisplayName</div>
+                            <div class="role @(isAdmin ? "admin" : "user")">
+                                @if (isAdmin)
+                                {
+                                    <i class="fas fa-crown"></i> <span>Administrator</span>
+                                }
+                                else
+                                {
+                                    <i class="fas fa-user"></i> <span>@currentUser.JobTitle</span>
+                                }
+                            </div>
+                        </li>
+
+                        <li>
+                            <a class="dropdown-item" asp-controller="Dashboard" asp-action="Index">
+                                <i class="fas fa-user"></i> My dashboard
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" asp-controller="Account" asp-action="CliTokens">
+                                <i class="fas fa-key"></i> Access tokens
+                            </a>
+                        </li>
+
+                        @if (isAdmin)
+                        {
+                            <li>
+                                <a class="dropdown-item" asp-controller="Admin" asp-action="Index">
+                                    <i class="fas fa-crown"></i> Admin panel
+                                </a>
+                            </li>
+                        }
+
+                        <li><hr class="dropdown-divider"></li>
+
+                        <li>
+                            <form asp-controller="Account" asp-action="Logout" method="post">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="dropdown-item danger w-100 border-0 bg-transparent text-start">
+                                    <i class="fas fa-sign-out-alt"></i> Sign out
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            }
+            else
+            {
+                <a asp-controller="Account" asp-action="Login" class="btn btn-secondary">
+                    <i class="fas fa-sign-in-alt"></i> Sign in
+                </a>
+                <a asp-controller="Account" asp-action="Register" class="btn btn-primary">
+                    Sign up
+                </a>
+            }
+        </div>
+    </div>
+</nav>

@@ -1,0 +1,58 @@
+@model Rezber.Services.Views.Admin.NexusSettingsDto
+@{
+    ViewData["Title"] = "Nexus settings";
+}
+
+<div class="container-xxl pt-4 pb-5">
+    <div class="mb-4">
+        <div class="dashboard-title">
+            <i class="fas fa-crown" style="color:var(--c-warning);margin-left:6px;"></i>
+            Admin panel
+        </div>
+    </div>
+
+    <partial name="~/Views/Admin/_AdminTabs.cshtml" model='@("Settings")' />
+
+    @if (!string.IsNullOrWhiteSpace(Model.Error))
+    {
+        <div class="alert alert-danger">Nexus status request failed: @Model.Error</div>
+    }
+
+    <section class="dash-section">
+        <div class="dash-section-title mb-1"><i class="fas fa-plug"></i> Runtime Nexus configuration</div>
+        <div class="dash-section-desc mb-4">Values are loaded from application configuration. Secrets are intentionally not displayed here.</div>
+
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="storage-item">
+                    <div class="storage-item-name">Integration</div>
+                    <div class="storage-item-value">@(Model.Enabled ? "Enabled" : "Disabled")</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="storage-item">
+                    <div class="storage-item-name">Nexus status</div>
+                    <div class="storage-item-value">@(Model.Status?.State ?? "Unavailable")</div>
+                    @if (Model.Status != null)
+                    {
+                        <div class="text-muted small">@Model.Status.Version · @Model.Status.Edition</div>
+                    }
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="storage-item">
+                    <div class="storage-item-name">Package publishing</div>
+                    <div class="storage-item-value">@(Model.Writable == true ? "Writable" : Model.Writable == false ? "Read only" : "Unknown")</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Nexus base URL</label>
+                <input class="form-control" value="@Model.BaseUrl" dir="ltr" readonly />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">NuGet hosted repository</label>
+                <input class="form-control" value="@Model.Repository" dir="ltr" readonly />
+            </div>
+        </div>
+    </section>
+</div>

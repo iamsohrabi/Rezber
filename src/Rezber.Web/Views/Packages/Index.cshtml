@@ -1,0 +1,240 @@
+@model PackageListVDto
+@{
+    ViewData["Title"] = "Package catalog";
+}
+
+<div class="container-xxl pt-4 pb-5">
+    <div class="catalog-header mb-4">
+        <div>
+            <div class="dashboard-title">Package catalog</div>
+            <div class="dashboard-subtitle">Discover and install packages from Rezber.</div>
+        </div>
+        <div class="catalog-summary">
+            <span><strong>@Model.TotalCount.ToString("N0")</strong> packages</span>
+            @if (Model.Source == "rezber")
+            {
+                <span><strong>@Model.TotalDownloads.ToString("N0")</strong> downloads</span>
+            }
+        </div>
+    </div>
+
+    @if (Model.PopularPackages.Count > 0)
+    {
+        <section class="popular-packages mb-4">
+            <div class="popular-packages-heading">
+                <div>
+                    <h2>Popular packages</h2>
+                    <span>Frequently downloaded .NET packages</span>
+                </div>
+                <i class="fas fa-fire" aria-hidden="true"></i>
+            </div>
+            <div class="popular-packages-list">
+                @foreach (var package in Model.PopularPackages)
+                {
+                    <a class="popular-package text-decoration-none"
+                       asp-controller="PackageBrowser" asp-action="Details" asp-route-id="@package.Id">
+                        <span class="pkg-icon @LanguageClass(package.Lang)">
+                            @if (package.HasImage)
+                            {
+                                <img src="@Url.Action("Image", "PackageBrowser", new { id = package.Id })" alt="" loading="lazy">
+                            }
+                            else
+                            {
+                                @LanguageLabel(package.Lang)
+                            }
+                        </span>
+                        <span class="popular-package-info">
+                            <strong>@package.Name</strong>
+                            <span><i class="fas fa-download"></i> @package.Downloads.ToString("N0")</span>
+                        </span>
+                    </a>
+                }
+            </div>
+        </section>
+    }
+
+    <form asp-controller="PackageBrowser" asp-action="Index" method="get" class="catalog-filters mb-4">
+        <select class="form-select" name="source" aria-label="Package source">
+            <option value="rezber" selected="@(Model.Source == "rezber")">Rezber</option>
+            <option value="docker-hosted" selected="@(Model.Source == "docker-hosted")">Docker Hosted</option>
+        </select>
+        <div class="catalog-query">
+            <i class="fas fa-search" aria-hidden="true"></i>
+            <input class="form-control" type="search" name="q" value="@Model.Query" placeholder="Search packages..." aria-label="Search packages">
+        </div>
+        @if (Model.Source == "rezber")
+        {
+            <select class="form-select" name="filter" aria-label="Filter by language">
+                <option value="all" selected="@(Model.Filter == "all")">All languages</option>
+                @foreach (var language in Model.LangCounts.OrderBy(item => item.Key))
+                {
+                    <option value="@language.Key" selected="@(Model.Filter == language.Key)">
+                        @language.Key (@language.Value)
+                    </option>
+                }
+            </select>
+            <select class="form-select" name="license" aria-label="Filter by license">
+                <option value="" selected="@(Model.SelectedLicense == null)">All licenses</option>
+                @foreach (var license in Model.LicenseCounts.OrderBy(item => item.Key))
+                {
+                    <option value="@license.Key" selected="@(Model.SelectedLicense == license.Key)">
+                        @license.Key (@license.Value)
+                    </option>
+                }
+            </select>
+            <select class="form-select" name="sort" aria-label="Sort packages">
+                <option value="recent" selected="@(Model.Sort == "recent")">Recently updated</option>
+                <option value="downloads" selected="@(Model.Sort == "downloads")">Most downloaded</option>
+                <option value="name" selected="@(Model.Sort == "name")">Name</option>
+                <option value="oldest" selected="@(Model.Sort == "oldest")">Oldest</option>
+            </select>
+        }
+        else
+        {
+            <input type="hidden" name="page" value="1">
+        }
+        <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i> Search</button>
+    </form>
+
+    @if (Model.Source == "docker-hosted")
+    {
+        <div class="dash-section">
+            <div class="catalog-results-heading mb-3">
+                <span>Docker images</span>
+                <span>@Model.TotalCount.ToString("N0") results</span>
+            </div>
+            @if (Model.DockerResults?.Items.Count > 0)
+            {
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr><th>Image</th><th>Version</th><th>Repository</th><th>Last modified</th></tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.DockerResults.Items)
+                            {
+                                <tr>
+                                    <td class="cell-mono">@item.Name</td>
+                                    <td class="cell-mono">@item.Version</td>
+                                    <td>@item.Repository</td>
+                                    <td>@(item.LastModified?.ToLocalTime().ToString("g") ?? "—")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                @if (Model.DockerResults.PageSize > 0 && Model.TotalCount > Model.DockerResults.PageSize)
+                {
+                    <nav class="d-flex justify-content-between align-items-center" aria-label="Docker results pages">
+                        @if (Model.DockerResults.Page > 1)
+                        {
+                            <a class="btn btn-secondary" asp-action="Index" asp-route-source="docker-hosted" asp-route-q="@Model.Query" asp-route-page="@(Model.DockerResults.Page - 1)">
+                                <i class="fas fa-arrow-right"></i> Previous
+                            </a>
+                        }
+                        else
+                        {
+                            <span></span>
+                        }
+                        <span>Page @Model.DockerResults.Page</span>
+                        @if ((long)Model.DockerResults.Page * Model.DockerResults.PageSize < Model.TotalCount)
+                        {
+                            <a class="btn btn-secondary" asp-action="Index" asp-route-source="docker-hosted" asp-route-q="@Model.Query" asp-route-page="@(Model.DockerResults.Page + 1)">
+                                Next <i class="fas fa-arrow-left"></i>
+                            </a>
+                        }
+                    </nav>
+                }
+            }
+            else
+            {
+                <div class="empty-state">
+                    <i class="fas fa-box-open" aria-hidden="true"></i>
+                    <p>No Docker images found.</p>
+                </div>
+            }
+        </div>
+    }
+    else if (Model.Packages.Count > 0)
+    {
+        <div class="catalog-results-heading mb-3">
+            <span>Packages</span>
+            <span>@Model.Packages.Count.ToString("N0") results</span>
+        </div>
+        <div class="row g-3">
+            @foreach (var package in Model.Packages)
+            {
+                <div class="col-12 col-md-6 col-xl-4">
+                    <a class="pkg-card text-decoration-none"
+                       asp-controller="PackageBrowser" asp-action="Details" asp-route-id="@package.Id">
+                        <div class="d-flex align-items-start gap-3 mb-3">
+                            <span class="pkg-icon @LanguageClass(package.Lang)">
+                                @if (package.HasImage)
+                                {
+                                    <img src="@Url.Action("Image", "PackageBrowser", new { id = package.Id })" alt="" loading="lazy">
+                                }
+                                else
+                                {
+                                    @LanguageLabel(package.Lang)
+                                }
+                            </span>
+                            <span class="flex-grow-1 min-w-0">
+                                <span class="pkg-name d-block">@package.Name</span>
+                                <span class="pkg-author"><i class="fas fa-user"></i> @package.Author</span>
+                            </span>
+                            <span class="pkg-version-badge">v@package.Version</span>
+                        </div>
+                        <span class="pkg-desc">@package.Description</span>
+                        @if (!string.IsNullOrWhiteSpace(package.Target))
+                        {
+                            <span class="mb-2"><span class="pkg-target">@package.Target</span></span>
+                        }
+                        <span class="pkg-tag-list mb-3">
+                            @foreach (var tag in package.Tags.Take(4))
+                            {
+                                <span class="tag">@tag</span>
+                            }
+                        </span>
+                        <span class="pkg-footer">
+                            <span class="pkg-stats">
+                                <span><i class="fas fa-download"></i> @package.Downloads.ToString("N0")</span>
+                                <span><i class="fas fa-scale-balanced"></i> @package.License</span>
+                            </span>
+                            <span class="text-muted small">@package.Lang</span>
+                        </span>
+                    </a>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="empty-state">
+            <i class="fas fa-box-open" aria-hidden="true"></i>
+            <p>No packages found. Try changing your search or filters.</p>
+        </div>
+    }
+</div>
+
+@functions {
+    private static string LanguageClass(string? language) =>
+        language?.ToLowerInvariant() switch
+        {
+            "csharp" or "c#" or ".net" or "dotnet" => "csharp",
+            "javascript" or "js" or "typescript" or "ts" => "js",
+            "python" or "py" => "python",
+            "go" or "golang" => "go",
+            _ => string.Empty
+        };
+
+    private static string LanguageLabel(string? language) =>
+        language?.ToLowerInvariant() switch
+        {
+            "csharp" or "c#" or ".net" or "dotnet" => "C#",
+            "javascript" or "js" => "JS",
+            "typescript" or "ts" => "TS",
+            "python" or "py" => "PY",
+            "go" or "golang" => "GO",
+            _ => string.IsNullOrWhiteSpace(language) ? "PKG" : language[..Math.Min(3, language.Length)].ToUpperInvariant()
+        };
+}

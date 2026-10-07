@@ -1,0 +1,30 @@
+@if (TempData["Success"] != null || TempData["Error"] != null || TempData["Warning"] != null)
+{
+    var type = TempData["Success"] != null ? "success"
+        : TempData["Error"] != null ? "danger" : "warning";
+
+    var message = TempData["Success"] ?? TempData["Error"] ?? TempData["Warning"];
+
+    var icon = type switch
+    {
+        "success" => "fa-check-circle",
+        "danger" => "fa-times-circle",
+        _ => "fa-exclamation-triangle"
+    };
+
+    var color = type switch
+    {
+        "success" => "var(--c-success)",
+        "danger" => "var(--c-danger)",
+        _ => "var(--c-warning)"
+    };
+
+    <div class="toast-container">
+        <div class="toast show" id="serverToast" role="alert" data-bs-autohide="true" data-bs-delay="3500">
+            <div class="toast-body">
+                <i class="fas @icon" style="color:@color;"></i>
+                <span>@message</span>
+            </div>
+        </div>
+    </div>
+}

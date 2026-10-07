@@ -1,0 +1,54 @@
+@model CliTokensViewModel
+@{
+    ViewData["Title"] = "Access tokens";
+}
+
+<div class="container-xxl pt-4 pb-5">
+    <div class="dash-section">
+        <div class="dash-section-title mb-2"><i class="fas fa-key"></i> Access tokens</div>
+        <div class="dash-section-desc mb-4">Use a token to publish packages from the command line. A new token is shown only once.</div>
+
+        @if (!string.IsNullOrWhiteSpace(Model.NewlyCreatedToken))
+        {
+            <div class="alert alert-warning" role="alert">
+                <strong>Copy this token now:</strong>
+                <code dir="ltr">@Model.NewlyCreatedToken</code>
+            </div>
+        }
+
+        <form asp-action="CreateCliToken" method="post" class="row g-2 mb-4">
+            @Html.AntiForgeryToken()
+            <div class="col-md-8">
+                <input name="name" class="form-control" placeholder="Token name, e.g. laptop or CI" />
+            </div>
+            <div class="col-md-4">
+                <button class="btn btn-primary w-100" type="submit">
+                    <i class="fas fa-plus"></i> Create token
+                </button>
+            </div>
+        </form>
+
+        @foreach (var token in Model.Tokens)
+        {
+            <div class="d-flex align-items-center justify-content-between border-bottom py-3 gap-3">
+                <div>
+                    <strong>@token.Name</strong>
+                    <div class="text-muted small"><code>@token.TokenPrefix...</code> · Created @token.CreatedAt.ToLocalTime().ToString("g")</div>
+                </div>
+                <form asp-action="RevokeCliToken" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@token.Id" />
+                    <button type="submit" class="btn btn-sm btn-outline-danger">Revoke</button>
+                </form>
+            </div>
+        }
+
+        <div class="mt-4">
+            <div class="form-label">Configure NuGet CLI</div>
+            <pre dir="ltr"><code>curl --request PUT \
+  --header "X-Rezber-ApiKey: YOUR_TOKEN" \
+  --upload-file ./dist/my-package.zip \
+  https://YOUR-NEXORA/api/packages/push/my-package/1.0.0/my-package.zip</code></pre>
+        </div>
+    </div>
+</div>
