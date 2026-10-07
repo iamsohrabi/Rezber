@@ -27,7 +27,7 @@
                     {
                         <tr>
                             <td class="cell-mono">@pkg.Name</td>
-                            <td class="cell-mono">v@pkg.Version</td>
+                            <td class="cell-mono">@($"v{pkg.Version}")</td>
                             <td>@pkg.AuthorName</td>
                             <td class="cell-mono">@pkg.Size</td>
                             <td class="cell-mono">@pkg.Downloads.ToString("N0")</td>

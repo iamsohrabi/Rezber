@@ -135,7 +135,7 @@
                                 {
                                     <tr>
                                         <td class="package-name-cell" title="@pkg.Name">@pkg.Name</td>
-                                        <td class="cell-mono text-nowrap">v@pkg.Version</td>
+                                        <td class="cell-mono text-nowrap">@($"v{pkg.Version}")</td>
                                         <td class="cell-mono text-center">@pkg.Versions.Count</td>
                                         <td class="cell-mono text-end text-nowrap">@pkg.Downloads.ToString("N0")</td>
                                         <td class="cell-mono text-center text-nowrap">@pkg.Size</td>

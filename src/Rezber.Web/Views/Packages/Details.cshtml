@@ -1,6 +1,12 @@
 @model PackageDetailDto
+@using Rezber.Services.Helpers
 @{
     var package = Model.Package;
+    var currentVersion = !string.IsNullOrWhiteSpace(package.Version)
+        ? package.Version
+        : Model.AvailableVersions.FirstOrDefault(version => version.Latest)?.Version;
+    var repositoryUrl = SafeExternalUrl(package.Repository);
+    var readmeUrl = SafeExternalUrl(package.ReadmeUrl);
     ViewData["Title"] = package.Name;
 }
 
@@ -29,7 +35,7 @@
                 <div class="detail-hero-meta">
                     <span><i class="fas fa-user"></i> <strong>@package.Author</strong></span>
                     <span><i class="fas fa-code"></i> <strong>@package.LanguageFullName</strong></span>
-                    <span><i class="fas fa-code-branch"></i> v<strong>@package.Version</strong></span>
+                    <span><i class="fas fa-code-branch"></i> <strong>@VersionLabel(currentVersion)</strong></span>
                     <span><i class="fas fa-download"></i> <strong>@Model.TotalDownloads.ToString("N0")</strong> downloads</span>
                     <span><i class="fas fa-scale-balanced"></i> <strong>@package.License</strong></span>
                     <span><i class="fas fa-box"></i> <strong>@package.Size</strong></span>
@@ -72,8 +78,7 @@
             @if (!string.IsNullOrWhiteSpace(Model.ReadmeHtml))
             {
                 <section class="mb-4">
-                    <h2 class="dash-section-title mb-3">README</h2>
-                    <div class="readme-content" dir="auto">@Html.Raw(Model.ReadmeHtml)</div>
+                    <div class="readme-content" dir="@(PackageReadmeRenderer.ContainsRightToLeftText(Model.ReadmeHtml) ? "rtl" : "ltr")">@Html.Raw(Model.ReadmeHtml)</div>
                 </section>
             }
             @if (package.Dependencies.Count > 0)
@@ -99,22 +104,89 @@
             }
         </div>
         <aside class="col-lg-4">
-            <section class="dash-section">
-                <h2 class="dash-section-title mb-3">Versions</h2>
+            <section class="sidebar-card">
+                <h6>Package information</h6>
+                <div class="sidebar-info-item">
+                    <span class="label"><i class="fas fa-code-branch"></i> Version</span>
+                    <span class="value mono">@VersionLabel(currentVersion)</span>
+                </div>
+                <div class="sidebar-info-item">
+                    <span class="label"><i class="fas fa-code"></i> Language</span>
+                    <span class="value">@package.LanguageFullName</span>
+                </div>
+                @if (!string.IsNullOrWhiteSpace(package.Target))
+                {
+                    <div class="sidebar-info-item">
+                        <span class="label"><i class="fas fa-crosshairs"></i> Target</span>
+                        <span class="value">@package.Target</span>
+                    </div>
+                }
+                <div class="sidebar-info-item">
+                    <span class="label"><i class="fas fa-scale-balanced"></i> License</span>
+                    <span class="value">@package.License</span>
+                </div>
+                <div class="sidebar-info-item">
+                    <span class="label"><i class="fas fa-box"></i> Package size</span>
+                    <span class="value">@package.Size</span>
+                </div>
+                <div class="sidebar-info-item">
+                    <span class="label"><i class="fas fa-download"></i> Downloads</span>
+                    <span class="value mono">@Model.TotalDownloads.ToString("N0")</span>
+                </div>
+                <div class="sidebar-info-item">
+                    <span class="label"><i class="fas fa-calendar-plus"></i> Published</span>
+                    <span class="value">@FormatDate(package.Created)</span>
+                </div>
+                <div class="sidebar-info-item">
+                    <span class="label"><i class="fab fa-github"></i> Repository</span>
+                    <span class="value">
+                        @if (repositoryUrl != null)
+                        {
+                            <a class="repository-link" href="@repositoryUrl" target="_blank" rel="noopener noreferrer">GitHub</a>
+                        }
+                        else
+                        {
+                            <span>—</span>
+                        }
+                    </span>
+                </div>
+                @if (readmeUrl != null)
+                {
+                    <div class="sidebar-info-item">
+                        <span class="label"><i class="fas fa-book"></i> README</span>
+                        <span class="value"><a class="repository-link" href="@readmeUrl" target="_blank" rel="noopener noreferrer">View README</a></span>
+                    </div>
+                }
+            </section>
+
+            <section class="sidebar-card">
+                <h6>Author</h6>
+                <div class="author-card">
+                    <div class="author-avatar">@AuthorInitial(package.Author)</div>
+                    <div>
+                        <div class="author-name">@package.Author</div>
+                        <div class="author-meta">@package.AuthorRole</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="sidebar-card">
+                <h6>Versions</h6>
                 <div class="table-responsive">
                     <table class="table">
-                        <thead><tr><th>Version</th><th>Downloads</th></tr></thead>
+                        <thead><tr><th>Version</th><th>Released</th><th>Downloads</th></tr></thead>
                         <tbody>
                             @foreach (var release in Model.AvailableVersions)
                             {
                                 <tr>
                                     <td>
-                                        <span class="cell-mono">v@release.Version</span>
+                                        <span class="cell-mono">@VersionLabel(release.Version)</span>
                                         @if (release.Latest)
                                         {
                                             <span class="badge bg-success ms-1">Latest</span>
                                         }
                                     </td>
+                                    <td class="text-nowrap">@FormatDate(release.Date)</td>
                                     <td class="cell-mono">@release.Downloads.ToString("N0")</td>
                                 </tr>
                             }
@@ -127,6 +199,22 @@
 </div>
 
 @functions {
+    private static string? SafeExternalUrl(string? value) =>
+        Uri.TryCreate(value, UriKind.Absolute, out var uri) &&
+        (uri.Scheme.Equals(Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) ||
+         uri.Scheme.Equals(Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
+            ? uri.AbsoluteUri
+            : null;
+
+    private static string FormatDate(DateTime value) =>
+        value == default ? "—" : value.ToLocalTime().ToString("d");
+
+    private static string VersionLabel(string? version) =>
+        string.IsNullOrWhiteSpace(version) ? "Not specified" : $"v{version}";
+
+    private static string AuthorInitial(string? author) =>
+        string.IsNullOrWhiteSpace(author) ? "?" : author.Trim()[..1].ToUpperInvariant();
+
     private static string LanguageClass(string? language) =>
         language?.ToLowerInvariant() switch
         {

@@ -182,7 +182,7 @@
                                 <span class="pkg-name d-block">@package.Name</span>
                                 <span class="pkg-author"><i class="fas fa-user"></i> @package.Author</span>
                             </span>
-                            <span class="pkg-version-badge">v@package.Version</span>
+                            <span class="pkg-version-badge">@($"v{package.Version}")</span>
                         </div>
                         <span class="pkg-desc">@package.Description</span>
                         @if (!string.IsNullOrWhiteSpace(package.Target))

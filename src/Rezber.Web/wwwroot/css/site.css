@@ -623,7 +623,7 @@ a { color: inherit; text-decoration: none; }
 .pkg-name {
     font-size: 14.5px; font-weight: 600;
     font-family: 'JetBrains Mono', monospace;
-    direction: ltr; text-align: right;
+    direction: ltr; text-align: left;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     color: var(--c-white);
 }
@@ -841,6 +841,7 @@ a { color: inherit; text-decoration: none; }
 .readme-content p { margin: 0 0 14px; }
 .readme-content :is(h1, h2, h3, h4, h5, h6, p, li, blockquote, th, td) {
     text-align: start;
+    unicode-bidi: plaintext;
 }
 .readme-content ul,
 .readme-content ol { padding-inline-start: 24px; margin: 0 0 16px; }
@@ -968,9 +969,9 @@ a { color: inherit; text-decoration: none; }
 
 .sidebar-info-item { display: flex; align-items: center; justify-content: space-between; font-size: 12.5px; gap: 12px; margin-bottom: 11px; }
 .sidebar-info-item:last-child { margin-bottom: 0; }
-.sidebar-info-item .label { color: var(--c-gray-3); display: flex; align-items: center; gap: 7px; }
+.sidebar-info-item .label { color: var(--c-gray-3); display: flex; align-items: center; gap: 7px; flex-shrink: 0; }
 .sidebar-info-item .label i { font-size: 11px; }
-.sidebar-info-item .value { color: var(--c-white); font-weight: 500; text-align: left; direction: ltr; word-break: break-word; }
+.sidebar-info-item .value { min-width: 0; color: var(--c-white); font-weight: 500; text-align: left; direction: ltr; overflow-wrap: anywhere; }
 .sidebar-info-item .value.mono { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; }
 
 .author-card { display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--c-dark-2); border-radius: 8px; border: 1px solid var(--c-border); }
